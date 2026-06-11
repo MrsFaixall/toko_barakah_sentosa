@@ -70,26 +70,31 @@ Langkah 3: Konfigurasi File Environment (.env)
 Duplikat file konfigurasi bawaan untuk membuat file .env baru sebagai basis pengaturan aplikasi Anda:
 
 Bash
+```
 cp .env.example .env
+```
 Langkah 4: Generate Application Key
 Buat kunci pengaman aplikasi baru yang akan otomatis tersimpan di dalam file .env:
 
 Bash
+```
 php artisan key:generate
+```
 Langkah 5: Konfigurasi Database
 Buat database baru di MySQL/phpMyAdmin Anda dengan nama toko_barakah_sentosa.
 
 Buka file .env menggunakan teks editor (seperti VS Code), lalu cari dan sesuaikan baris kode berikut dengan detail database Anda:
-
-Cuplikan kode
+```
+//Cuplikan kode
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
-DB_DATABASE=toko_barakah_sentosa
+DB_DATABASE=toko_barakah_sentosa(disini)
 DB_USERNAME=root
 DB_PASSWORD=ISI_PASSWORD_DATABASE_ANDA_DISINI
 Langkah 6: Migrasi Database & Seeding
 Jalankan perintah migrasi untuk membuat seluruh struktur tabel ke database beserta data awal bawaan sistem (jika ada):
+```
 
 ```Bash
 php artisan migrate --seed
@@ -97,8 +102,9 @@ php artisan migrate --seed
 Langkah 7: Jalankan Server Lokal
 Nyalakan server lokal Laravel Anda dengan menjalankan perintah ini:
 
-Bash
+```Bash
 php artisan serve
+```
 Aplikasi sekarang sudah aktif dan dapat diakses melalui browser kesayangan Anda di alamat URL: http://127.0.0.1:8000
 
 ```
@@ -117,9 +123,10 @@ Plaintext
 📤 Cara Push Perubahan File README ini ke GitHub
 Jika Anda memperbarui dokumen ini di lokal, ketik 3 perintah ini secara berurutan di terminal Anda untuk memperbarui file di repositori GitHub:
 
-Bash
+```Bash
 git add README.md
 git commit -m "Update file README.md gabungan terlengkap dan instruksi sistem"
 git push origin main
 📄 Lisensi
 Proyek ini bersifat open-source di bawah lisensi MIT License.
+```

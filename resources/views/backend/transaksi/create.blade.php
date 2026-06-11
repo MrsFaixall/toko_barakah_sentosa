@@ -7,7 +7,7 @@
     <div class="alert alert-danger mb-3">{{ session('error') }}</div>
 @endif
 
-{{-- 🔴 TEMPAT ALERT DINAMIS JAVASCRIPT (Bukan Pop-Up) --}}
+{{-- TEMPAT ALERT DINAMIS JAVASCRIPT --}}
 <div id="js-alert-container"></div>
 
 <div class="card">
@@ -21,9 +21,9 @@
             <div class="row mb-3 align-items-end">
                 <div class="col-md-4">
                     <label class="form-label">Pilih Produk</label>
-                    {{-- 🔴 Ditambahkan class "select2-produk" untuk mengaktifkan fitur pencarian --}}
-                    <select id="produk" class="form-control select2-produk" onchange="updateInfoStok()">
-                        <option value="">-- pilih --</option>
+                    {{-- Menggunakan class 'use-select2' sesuai dengan contoh acuan --}}
+                    <select id="produk" class="form-control use-select2">
+                        <option value="">-- Pilih Produk --</option>
                         @foreach($produk as $p)
                             @php
                                 $stokFisik = $p->produk->total_stok_terkecil ?? 0;
@@ -94,22 +94,20 @@
 let total = 0;
 let itemIndex = 0; 
 
-// 🔴 AKTIFKAN FITUR SEARCH SELECT2 & PERBAIKAN EVENT TRIGERNYA
 $(document).ready(function() {
-    $('.select2-produk').select2({
-        theme: 'bootstrap4', // Menyesuaikan dengan tampilan bootstrap template Matrix
+    // Re-inisialisasi/Pastikan select2 terpasang dengan tema bootstrap yang benar
+    $('.use-select2').select2({
+        theme: 'bootstrap4', 
         width: '100%',
-        placeholder: '-- pilih --'
+        placeholder: '-- Pilih Produk --'
     });
 
-    // Karena Select2 mengubah struktur HTML, event 'onchange' bawaan select sering macet.
-    // Kita ikat (bind) ulang menggunakan jQuery Select2 event:
-    $('.select2-produk').on('select2:select', function (e) {
+    // Event handler jQuery Select2 untuk mendeteksi perubahan produk
+    $('#produk').on('select2:select', function (e) {
         updateInfoStok();
     });
 });
 
-// 🔴 FUNGSI UNTUK MENAMPILKAN ALERT TEKS DI ATAS HALAMAN (BUKAN POP-UP)
 function tampilkanAlert(pesan, tipe = 'danger') {
     let alertContainer = document.getElementById('js-alert-container');
     let htmlAlert = `
@@ -119,40 +117,37 @@ function tampilkanAlert(pesan, tipe = 'danger') {
         </div>
     `;
     alertContainer.innerHTML = htmlAlert;
-    
-    // Auto scroll ke atas sedikit agar user langsung melihat alertnya
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function updateInfoStok() {
-    let select = document.getElementById('produk');
-    let selected = select.options[select.selectedIndex];
+    // Menggunakan jQuery agar sinkron dengan manipulasi DOM dari Select2
+    let selected = $('#produk').find(':selected');
     
-    if (!selected || !selected.value) {
+    if (!selected.val()) {
         document.getElementById('info-stok').value = "0";
         return;
     }
     
-    let stokTersedia = selected.dataset.stok;
-    let namaSatuan = selected.dataset.satuan;
+    let stokTersedia = selected.data('stok');
+    let namaSatuan = selected.data('satuan');
     document.getElementById('info-stok').value = stokTersedia + " " + namaSatuan;
 }
 
 function tambahItem() {
-    let select = document.getElementById('produk');
-    let selected = select.options[select.selectedIndex];
+    let selected = $('#produk').find(':selected');
 
-    if (!selected || !selected.value) {
+    if (!selected.val()) {
         return tampilkanAlert('Silahkan pilih produk terlebih dahulu melalui kolom pencarian!');
     }
 
-    let id = selected.value;
-    let nama = selected.dataset.nama;
-    let harga = parseInt(selected.dataset.harga);
+    let id = selected.val();
+    let nama = selected.data('nama');
+    let harga = parseInt(selected.data('harga'));
     let qty = parseInt(document.getElementById('qty').value);
     
-    let maxStok = parseInt(selected.dataset.stok);
-    let satuan = selected.dataset.satuan;
+    let maxStok = parseInt(selected.data('stok'));
+    let satuan = selected.data('satuan');
 
     if (isNaN(qty) || qty < 1) {
         return tampilkanAlert('Isi kuantitas (Qty) belanja dengan benar minimal 1!');
@@ -166,7 +161,6 @@ function tambahItem() {
         return tampilkanAlert(`Stok tidak mencukupi! Sisa stok <strong>${nama}</strong> tersedia hanya: ${maxStok} ${satuan}`, 'warning');
     }
 
-    // Bersihkan alert jika proses validasi di atas lolos
     document.getElementById('js-alert-container').innerHTML = '';
 
     let subtotal = harga * qty;
@@ -192,15 +186,15 @@ function tambahItem() {
     document.querySelector('#tableItem tbody').insertAdjacentHTML('beforeend', row);
     document.getElementById('total').innerText = total.toLocaleString();
     
-    // Potong sisa data stok di client side
-    selected.dataset.stok = maxStok - qty;
+    // Potong sisa data stok di sisi client menggunakan jQuery data method
+    selected.data('stok', maxStok - qty);
     updateInfoStok();
 
     itemIndex++; 
     document.getElementById('qty').value = 1; 
     
     // Reset Select2 ke posisi default awal setelah sukses tambah data
-    $('.select2-produk').val('').trigger('change');
+    $('.use-select2').val('').trigger('change');
 }
 
 function hapusItem(btn, subtotal, id, qty) {
@@ -208,14 +202,13 @@ function hapusItem(btn, subtotal, id, qty) {
     total -= subtotal;
     document.getElementById('total').innerText = total.toLocaleString();
 
-    let select = document.getElementById('produk');
-    for (let i = 0; i < select.options.length; i++) {
-        if (select.options[i].value == id) {
-            let currentStok = parseInt(select.options[i].dataset.stok);
-            select.options[i].dataset.stok = currentStok + parseInt(qty);
-            break;
-        }
+    // Kembalikan stok menggunakan pencarian elemen option jQuery
+    let option = $('#produk').find(`option[value="${id}"]`);
+    if(option.length) {
+        let currentStok = parseInt(option.data('stok'));
+        option.data('stok', currentStok + parseInt(qty));
     }
+    
     updateInfoStok();
 }
 </script>
